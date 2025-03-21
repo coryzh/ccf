@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import constants as const
+import ccf.constants as const
 
 
 class WavelengthBin:
@@ -51,8 +51,9 @@ class NormalizedCCF:
 
     @property
     def lags_in_kms(self) -> np.ndarray:
-        self.lags * self.bins.log_step * const.c_in_kms
-
+        return self.lags * self.bins.log_step * const.c_in_kms
+    
+    
 
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
