@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import constants as const
 
 
 class WavelengthBin:
@@ -50,21 +51,7 @@ class NormalizedCCF:
 
     @property
     def lags_in_kms(self) -> np.ndarray:
-        pass
-    # @property
-    # def wave_min(self) -> float:
-    #     wave_obs = self.spec_obs.spectral_axis.value
-    #     wave_tem = self.spec_tem.spectral_axis.value
-
-    #     return np.min(np.concatenate(wave_obs, wave_tem))
-
-    # @property
-    # def wave_max(self) -> float:
-    #     wave_obs = self.spec_obs.spectral_axis.value
-    #     wave_tem = self.spec_tem.spectral_axis.value
-
-    #     wave_obs, wave_tem = self._get_wave_obs_tem()
-    #     return np.max(np.concatenate((wave_obs, wave_tem)))
+        self.lags * self.bins.log_step * const.c_in_kms
 
 
 def test() -> None:
