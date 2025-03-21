@@ -1,0 +1,8 @@
+# Ignore pytest cache
+**/__pycache__/*
+
+# Ignore IDE configuration files
+.idea/
+.vscode/
+.env
+*.iml
