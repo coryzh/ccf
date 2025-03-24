@@ -45,6 +45,16 @@ class NormalizedCCF:
         self.data_temp = data_temp
         self.bins = bins
 
+        if len(data_obs) != len(data_temp):
+            raise ValueError(
+                f"data_obs, length: {len(data_obs)} and \
+                data_temp, length: {len(data_temp)} must have the same length."
+            )
+
+    @property
+    def series_length(self) -> int:
+        return len(self.data_obs)
+
     @property
     def lags(self) -> np.ndarray:
         return np.arange(-self.bins.nbins + 1, self.bins.nbins)
@@ -52,8 +62,31 @@ class NormalizedCCF:
     @property
     def lags_in_kms(self) -> np.ndarray:
         return self.lags * self.bins.log_step * const.c_in_kms
-    
-    
+
+    @property
+    def rms_obs(self) -> float:
+        return np.sqrt(np.sum(self.data_obs ** 2) / self.bins.nbins)
+
+    @property
+    def rms_temp(self) -> float:
+        return np.sqrt(np.sum(self.data_temp ** 2) / self.bins.nbins)
+
+    def normalized_ccf(self) -> np.ndarray:
+        corr = np.zeros(len(self.lags))
+        for i, lag in enumerate(self.lags):
+            if lag >= 0:
+                t_min, t_max = 0, self.series_length - lag
+            else:
+                t_min, t_max = -lag, self.series_length
+
+            corr[i] = np.sum(
+                self.data_obs[t] * self.data_temp[t + lag]
+                for t in range(t_min, t_max)
+            )
+
+        corr /= self.bins.nbins * self.rms_obs * self.rms_temp
+        return corr
+
 
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
