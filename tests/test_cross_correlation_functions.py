@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from ccf.core.cross_correlation_functions import WavelengthBin, NormalizedCCF
+from astropy.modeling.models import Lorentz1D
 
 
 class TestWavelengthBin:
@@ -44,8 +45,65 @@ class TestWavelengthBin:
 
 
 class TestNormalizedCCF:
-    
+    def setup_method(self):
+        self.nbins = 5
+        self.wave_centre = 6564.6
+        self.window = 5
+        self.shift = 1
+        self.bins = WavelengthBin(
+            self.wave_centre - 0.5 * self.window,
+            self.wave_centre + 0.5 * self.window,
+            self.nbins
+        )
+
+        line_profile = Lorentz1D(
+            x_0=self.wave_centre,
+            fwhm=5.0, amplitude=1.0
+        )
+
+        line_profile_shifted = Lorentz1D(
+            x_0=self.wave_centre-self.shift, fwhm=5.0, amplitude=1.0
+        )
+
+        noise = np.random.randn(self.nbins + 1) * 0.1
+
+        self.data_obs = line_profile_shifted(self.bins.linear_grid) + noise
+        self.data_temp = line_profile(self.bins.linear_grid)
+        self.ccf = NormalizedCCF(self.data_obs, self.data_temp, self.bins)
+
+    def test_initialization_invalid(self):
+        with pytest.raises(ValueError):
+            NormalizedCCF(
+                np.array([1, 2, 3]), np.array([1, 2, 3, 4]),
+                self.bins
+            )
+
+    def test_series_length(self):
+        assert self.ccf.series_length == self.nbins + 1
+
     def test_lags(self):
-        bins_test = WavelengthBin(6460, 6660, 100)
-        ccf_test = NormalizedCCF()
-        pass
+        expected_lags = np.array([-4, -3, -2, -1, 0, 1, 2, 3, 4])
+        assert np.array_equal(self.ccf.lags, expected_lags)
+
+    def test_lags_in_kms(self):
+        # const = type("const", (object,), {"c_in_kms": 299792.458})
+        expected_lags_kms = self.ccf.lags * self.bins.log_step * 299792.458
+        assert np.allclose(self.ccf.lags_in_kms, expected_lags_kms)
+
+    def test_rms_obs(self):
+        expected_rms_obs = np.sqrt(
+            np.sum(self.data_obs ** 2) / self.bins.nbins
+        )
+
+        assert np.isclose(self.ccf.rms_obs, expected_rms_obs)
+
+    def test_rms_temp(self):
+        expected_rms_temp = np.sqrt(
+            np.sum(self.data_temp ** 2) / self.bins.nbins
+        )
+
+        assert np.isclose(self.ccf.rms_temp, expected_rms_temp)
+
+    def test_length_normalized_ccf(self):
+        ccf_result = self.ccf.normalized_ccf()
+        assert len(ccf_result) == len(self.ccf.lags)
