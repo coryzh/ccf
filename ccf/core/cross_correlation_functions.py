@@ -37,6 +37,11 @@ class WavelengthBin:
         """
         return np.diff(np.log(self.log_grid))[0]
 
+    def __repr__(self):
+        return (f"Wavelengthbin(nbins={self.nbins}, "
+                f"wave_min={self.wave_min:.1f}, "
+                f"wave_max={self.wave_max:.1f})")
+
 
 class NormalizedCCF:
     def __init__(self, data_obs: np.ndarray, data_temp: np.ndarray,
