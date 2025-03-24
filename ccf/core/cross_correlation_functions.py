@@ -79,10 +79,11 @@ class NormalizedCCF:
             else:
                 t_min, t_max = -lag, self.series_length
 
-            corr[i] = np.sum(
+            corr_list = [
                 self.data_obs[t] * self.data_temp[t + lag]
                 for t in range(t_min, t_max)
-            )
+            ]
+            corr[i] = np.sum(np.array(corr_list))
 
         corr /= self.bins.nbins * self.rms_obs * self.rms_temp
         return corr
