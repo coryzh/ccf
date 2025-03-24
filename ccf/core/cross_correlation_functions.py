@@ -103,6 +103,9 @@ class NormalizedCCF:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags_in_kms[peak_id]
 
+    def antisymmetric_component(self, lag_0: int) -> np.ndarray:
+        pass
+
 
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
