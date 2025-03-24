@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from ccf.core.cross_correlation_functions import WavelengthBin
+from ccf.core.cross_correlation_functions import WavelengthBin, NormalizedCCF
 
 
 class TestWavelengthBin:
@@ -41,3 +41,11 @@ class TestWavelengthBin:
         log_grid = bin_obj.log_grid
         expected_log_step = np.log(log_grid[5]) - np.log(log_grid[4])
         assert np.isclose(log_step, expected_log_step)
+
+
+class TestNormalizedCCF:
+    
+    def test_lags(self):
+        bins_test = WavelengthBin(6460, 6660, 100)
+        ccf_test = NormalizedCCF()
+        pass
