@@ -93,6 +93,16 @@ class NormalizedCCF:
         corr /= self.bins.nbins * self.rms_obs * self.rms_temp
         return corr
 
+    @property
+    def primary_peak(self) -> int:
+        peak_id = np.argmax(self.normalized_ccf())
+        return self.lags[peak_id]
+
+    @property
+    def primary_peak_in_kms(self) -> float:
+        peak_id = np.argmax(self.normalized_ccf())
+        return self.lags_in_kms[peak_id]
+
 
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
