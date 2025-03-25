@@ -102,8 +102,13 @@ class NormalizedCCF:
     def primary_peak_loc_kms(self) -> float:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags_in_kms[peak_id]
-    
-    def sigma_antisymmetric(self, lag_0: int) -> np.ndarray:
+
+    @property
+    def primary_peak_height(self) -> float:
+        ccf = self.normalized_ccf()
+        return ccf[self.primary_peak_loc]
+
+    def rms_antisymmetric(self, lag_0: int) -> np.ndarray:
         i_min = abs(lag_0)
         i_max = 2 * self.bins.nbins - 2 - abs(lag_0)
 
@@ -126,6 +131,24 @@ class NormalizedCCF:
 
         sigma_a = np.sqrt(np.sum(antisymmetric ** 2) / (2 * self.bins.nbins))
         return sigma_a
+
+    @property
+    def r_ratio(self) -> float:
+        """
+        The r-ratio from Tonry & Davis 1979.
+        Returns
+        -------
+        float
+            The r-ratio given the primary peak height and the rms of the
+            antisymmetric component of the CCF.
+        """
+        r = (
+            self.primary_peak_height
+            / (np.sqrt(2) *
+               self.rms_antisymmetric(lag_0=self.primary_peak_loc))
+        )
+
+        return r
 
 
 def test() -> None:
