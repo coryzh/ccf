@@ -99,7 +99,7 @@ class NormalizedCCF:
         return self.lags[peak_id]
 
     @property
-    def primary_peak_loc_kms(self) -> float:
+    def rv(self) -> float:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags_in_kms[peak_id]
 
@@ -150,7 +150,7 @@ class NormalizedCCF:
 
         return r
 
-
+    
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
     print(len(bin_obj.linear_grid))
