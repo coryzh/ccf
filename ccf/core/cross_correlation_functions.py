@@ -106,7 +106,7 @@ class NormalizedCCF:
     @property
     def primary_peak_height(self) -> float:
         ccf = self.normalized_ccf()
-        return ccf[self.primary_peak_loc]
+        return ccf[self.primary_peak_loc + self.bins.nbins - 1]
 
     def rms_antisymmetric(self, lag_0: int) -> np.ndarray:
         i_min = abs(lag_0)
