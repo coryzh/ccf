@@ -150,7 +150,13 @@ class NormalizedCCF:
 
         return r
 
-    
+    @property
+    def rv_err(self) -> float:
+        ccf_fft = np.fft.fft(self.normalized_ccf())
+        ccf_fft_pow = np.abs(ccf_fft ** 2)
+        ccf_fft_freq = np.fft.fftfreq(len(self.lags))
+
+
 def test() -> None:
     bin_obj = WavelengthBin(6500, 6700, 100)
     print(len(bin_obj.linear_grid))
