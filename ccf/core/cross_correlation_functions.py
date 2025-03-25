@@ -103,8 +103,29 @@ class NormalizedCCF:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags_in_kms[peak_id]
 
-    def antisymmetric_component(self, lag_0: int) -> np.ndarray:
-        pass
+    def sigma_antisymmetric(self, lag_0: int) -> np.ndarray:
+        i_min = abs(lag_0)
+        i_max = 2 * self.bins.nbins - 2 - abs(lag_0)
+
+        if i_min >= i_max:
+            raise ValueError(
+                f"Invalid value for lag_0. Given the bins, lag_0 can only "
+                f"take a value between -{self.bins.nbins - 1} "
+                f"and {self.bins.nbins - 1}."
+            )
+
+        antisymmetric = np.zeros_like(self.normalized_ccf())
+        ccf = self.normalized_ccf()
+        # Only element within i_min and i_max are computed, the others are kept
+        # at 0.
+        for i in range(i_min, i_max + 1):
+            antisymmetric[i] = (
+                ccf[i - self.bins.nbins + 1 + lag_0]
+                - ccf[-i + self.bins.nbins - 1 + lag_0]
+            )
+
+        sigma_a = np.sqrt(np.sum(antisymmetric ** 2) / (2 * self.bins.nbins))
+        return sigma_a
 
 
 def test() -> None:
