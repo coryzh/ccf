@@ -94,15 +94,15 @@ class NormalizedCCF:
         return corr
 
     @property
-    def primary_peak(self) -> int:
+    def primary_peak_loc(self) -> int:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags[peak_id]
 
     @property
-    def primary_peak_in_kms(self) -> float:
+    def primary_peak_loc_kms(self) -> float:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags_in_kms[peak_id]
-
+    
     def sigma_antisymmetric(self, lag_0: int) -> np.ndarray:
         i_min = abs(lag_0)
         i_max = 2 * self.bins.nbins - 2 - abs(lag_0)
