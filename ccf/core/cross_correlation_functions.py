@@ -10,19 +10,20 @@ class WavelengthBin:
         self.wave_min = wave_min
         self.wave_max = wave_max
         self.nbins = nbins
+        self.ndata = nbins + 1
 
         if self.wave_min >= self.wave_max:
             raise ValueError("wave_min must be smaller than wave_max.")
 
     @property
     def linear_grid(self) -> np.ndarray:
-        return np.linspace(self.wave_min, self.wave_max, self.nbins + 1)
+        return np.linspace(self.wave_min, self.wave_max, self.ndata)
 
     @property
     def log_grid(self) -> np.ndarray:
         log_min = np.log(self.wave_min)
         log_max = np.log(self.wave_max)
-        return np.logspace(log_min, log_max, self.nbins + 1, base=math.e)
+        return np.logspace(log_min, log_max, self.ndata, base=math.e)
 
     @property
     def linear_step(self) -> float:
@@ -97,8 +98,9 @@ class NormalizedCCF:
 
     @property
     def ccf_peaks(self) -> Tuple[np.ndarray, np.ndarray]:
-        peak_indices, peak_heights = find_peaks(self.normalized_ccf())
-        return peak_indices, peak_heights["peak_heights"]
+        ccf = self.normalized_ccf()
+        peak_indices, _ = find_peaks(ccf, height=0.01)
+        return self.lags[peak_indices], ccf[peak_indices]
 
     @property
     def primary_peak_loc(self) -> int:
@@ -115,7 +117,7 @@ class NormalizedCCF:
         ccf = self.normalized_ccf()
         return ccf[self.primary_peak_loc + self.bins.nbins - 1]
 
-    def rms_antisymmetric(self, lag_0: int) -> np.ndarray:
+    def rms_antisymmetric(self, lag_0: int) -> float:
         i_min = abs(lag_0)
         i_max = 2 * self.bins.nbins - 2 - abs(lag_0)
 
