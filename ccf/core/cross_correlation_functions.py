@@ -42,6 +42,7 @@ class WavelengthBin:
 
     def __repr__(self):
         return (f"Wavelengthbin(nbins={self.nbins}, "
+                f"ndata={self.ndata}, "
                 f"wave_min={self.wave_min:.1f}, "
                 f"wave_max={self.wave_max:.1f})")
 
@@ -65,7 +66,7 @@ class NormalizedCCF:
 
     @property
     def lags(self) -> np.ndarray:
-        return np.arange(-self.bins.nbins + 1, self.bins.nbins)
+        return np.arange(-self.bins.ndata + 1, self.bins.ndata)
 
     @property
     def lags_in_kms(self) -> np.ndarray:
@@ -73,11 +74,11 @@ class NormalizedCCF:
 
     @property
     def rms_obs(self) -> float:
-        return np.sqrt(np.sum(self.data_obs ** 2) / self.bins.nbins)
+        return np.sqrt(np.sum(self.data_obs ** 2) / self.bins.ndata)
 
     @property
     def rms_temp(self) -> float:
-        return np.sqrt(np.sum(self.data_temp ** 2) / self.bins.nbins)
+        return np.sqrt(np.sum(self.data_temp ** 2) / self.bins.ndata)
 
     def normalized_ccf(self) -> np.ndarray:
         corr = np.zeros(len(self.lags))
