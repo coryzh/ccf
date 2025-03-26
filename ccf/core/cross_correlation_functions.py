@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import ccf.constants as const
+from scipy.signal import find_peaks
+from typing import Tuple
 
 
 class WavelengthBin:
@@ -94,6 +96,11 @@ class NormalizedCCF:
         return corr
 
     @property
+    def ccf_peaks(self) -> Tuple[np.ndarray, np.ndarray]:
+        peak_indices, peak_heights = find_peaks(self.normalized_ccf())
+        return peak_indices, peak_heights["peak_heights"]
+
+    @property
     def primary_peak_loc(self) -> int:
         peak_id = np.argmax(self.normalized_ccf())
         return self.lags[peak_id]
@@ -152,9 +159,7 @@ class NormalizedCCF:
 
     @property
     def rv_err(self) -> float:
-        ccf_fft = np.fft.fft(self.normalized_ccf())
-        ccf_fft_pow = np.abs(ccf_fft ** 2)
-        ccf_fft_freq = np.fft.fftfreq(len(self.lags))
+        pass
 
 
 def test() -> None:
