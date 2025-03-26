@@ -106,7 +106,6 @@ class NormalizedCCF:
         corr /= self.rms_obs * self.rms_temp * self.bins.ndata
         return corr
 
-    @property
     def ccf_peaks(self, min_height: float = 0.001) -> Tuple:
         ccf = self.ccf()
         pos_peak, _ = find_peaks(ccf, height=None)
@@ -129,7 +128,7 @@ class NormalizedCCF:
 
     @property
     def rv(self) -> float:
-        peak_indices, heights = self.ccf_peaks
+        peak_indices, heights = self.ccf_peaks()
         max_peak_id = peak_indices[np.argmax(heights)]
 
         return self.lags_in_kms[max_peak_id]
@@ -183,4 +182,20 @@ class NormalizedCCF:
 
     @property
     def rv_err(self) -> float:
-        pass
+        dist_from_primary_peak = np.abs(
+            self.primary_peak_loc
+            - self.lags[self.ccf_peaks()[0]]
+        )
+
+        dist_from_primary_peak = np.sort(dist_from_primary_peak)
+        # The second element in the distance array should be the distance to
+        # the closest neighbouring peak. N.B, the first one should be 0.
+
+        closest_peak_dist = dist_from_primary_peak[1]
+
+        result = (
+            closest_peak_dist * (1 / (1 + self.r_ratio))
+            * self.bins.log_step * const.c_in_kms
+        )
+
+        return result
