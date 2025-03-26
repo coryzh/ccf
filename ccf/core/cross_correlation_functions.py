@@ -106,28 +106,21 @@ class NormalizedCCF:
         corr /= self.rms_obs * self.rms_temp * self.bins.ndata
         return corr
 
-    # def normalized_ccf(self) -> np.ndarray:
-    #     corr = np.zeros(len(self.lags))
-    #     for i, lag in enumerate(self.lags):
-    #         if lag >= 0:
-    #             t_min, t_max = 0, self.series_length - lag
-    #         else:
-    #             t_min, t_max = -lag, self.series_length
-
-    #         corr_list = [
-    #             self.data_temp[t] * self.data_obs[t + lag]
-    #             for t in range(t_min, t_max)
-    #         ]
-    #         corr[i] = np.sum(np.array(corr_list))
-
-    #     corr /= self.bins.ndata * self.rms_obs * self.rms_temp
-    #     return corr
-
     @property
-    def ccf_peaks(self) -> Tuple[np.ndarray, np.ndarray]:
+    def ccf_peaks(self, min_height: float = 0.001) -> Tuple:
         ccf = self.ccf()
-        peak_indices, _ = find_peaks(ccf, height=0.01)
-        return self.lags[peak_indices], ccf[peak_indices]
+        pos_peak, _ = find_peaks(ccf, height=None)
+        neg_peak, _ = find_peaks(-ccf, height=None)
+        pos_peak_heights = ccf[pos_peak]
+        neg_peak_heights = np.abs(ccf[neg_peak])
+
+        pos_peak_valid = pos_peak[np.where(pos_peak_heights >= min_height)[0]]
+        neg_peak_valid = neg_peak[np.where(neg_peak_heights >= min_height)[0]]
+
+        peak_indices = np.concatenate((pos_peak_valid, neg_peak_valid))
+        peak_indices = np.sort(peak_indices)
+
+        return peak_indices, ccf[peak_indices]
 
     @property
     def primary_peak_loc(self) -> int:
@@ -136,23 +129,25 @@ class NormalizedCCF:
 
     @property
     def rv(self) -> float:
-        peak_id = np.argmax(self.ccf())
-        return self.lags_in_kms[peak_id]
+        peak_indices, heights = self.ccf_peaks
+        max_peak_id = peak_indices[np.argmax(heights)]
+
+        return self.lags_in_kms[max_peak_id]
 
     @property
     def primary_peak_height(self) -> float:
         ccf = self.ccf()
-        return ccf[self.primary_peak_loc + self.bins.nbins - 1]
+        return ccf[self.primary_peak_loc + self.bins.ndata - 1]
 
     def rms_antisymmetric(self, lag_0: int) -> float:
         i_min = abs(lag_0)
-        i_max = 2 * self.bins.nbins - 2 - abs(lag_0)
+        i_max = 2 * self.bins.ndata - 2 - abs(lag_0)
 
         if i_min >= i_max:
             raise ValueError(
                 f"Invalid value for lag_0. Given the bins, lag_0 can only "
-                f"take a value between -{self.bins.nbins - 1} "
-                f"and {self.bins.nbins - 1}."
+                f"take a value between -{self.bins.ndata - 1} "
+                f"and {self.bins.ndata - 1}."
             )
 
         antisymmetric = np.zeros_like(self.ccf())
@@ -161,11 +156,11 @@ class NormalizedCCF:
         # at 0.
         for i in range(i_min, i_max + 1):
             antisymmetric[i] = (
-                ccf[i - self.bins.nbins + 1 + lag_0]
-                - ccf[-i + self.bins.nbins - 1 + lag_0]
+                ccf[i - self.bins.ndata + 1 + lag_0]
+                - ccf[-i + self.bins.ndata - 1 + lag_0]
             )
 
-        sigma_a = np.sqrt(np.sum(antisymmetric ** 2) / (2 * self.bins.nbins))
+        sigma_a = np.sqrt(np.sum(antisymmetric ** 2) / (2 * self.bins.ndata))
         return sigma_a
 
     @property
@@ -189,12 +184,3 @@ class NormalizedCCF:
     @property
     def rv_err(self) -> float:
         pass
-
-
-def test() -> None:
-    bin_obj = WavelengthBin(6500, 6700, 100)
-    print(len(bin_obj.linear_grid))
-
-
-if __name__ == "__main__":
-    test()
