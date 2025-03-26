@@ -66,6 +66,18 @@ class NormalizedCCF:
 
     @property
     def lags(self) -> np.ndarray:
+        """
+        Lags between the template and the observed spectra. It is in units of
+        logarithmic wavelength bin width. A positive lag means that the
+        observed spectrum is red-shifted from the template spectrum. This
+        definition makes sure that lags have the same sign as radial
+        velocities.
+
+        Returns
+        -------
+        np.ndarray
+            Lags as number of wavelength bins.
+        """
         return np.arange(-self.bins.ndata + 1, self.bins.ndata)
 
     @property
@@ -80,42 +92,56 @@ class NormalizedCCF:
     def rms_temp(self) -> float:
         return np.sqrt(np.sum(self.data_temp ** 2) / self.bins.ndata)
 
-    def normalized_ccf(self) -> np.ndarray:
-        corr = np.zeros(len(self.lags))
-        for i, lag in enumerate(self.lags):
-            if lag >= 0:
-                t_min, t_max = 0, self.series_length - lag
-            else:
-                t_min, t_max = -lag, self.series_length
-
-            corr_list = [
-                self.data_obs[t] * self.data_temp[t + lag]
-                for t in range(t_min, t_max)
-            ]
-            corr[i] = np.sum(np.array(corr_list))
-
-        corr /= self.bins.nbins * self.rms_obs * self.rms_temp
+    def ccf(self) -> np.ndarray:
+        """
+        N.B. in np.correlate, the first series is to be shifted while the
+        second one is kept fixed. In our definition the observed spectrum
+        is shifted against the template for a range of lag values.
+        Returns
+        -------
+        np.ndarray
+            Cross-correlation function values.
+        """
+        corr = np.correlate(self.data_obs, self.data_temp, mode="full")
+        corr /= self.rms_obs * self.rms_temp * self.bins.ndata
         return corr
+
+    # def normalized_ccf(self) -> np.ndarray:
+    #     corr = np.zeros(len(self.lags))
+    #     for i, lag in enumerate(self.lags):
+    #         if lag >= 0:
+    #             t_min, t_max = 0, self.series_length - lag
+    #         else:
+    #             t_min, t_max = -lag, self.series_length
+
+    #         corr_list = [
+    #             self.data_temp[t] * self.data_obs[t + lag]
+    #             for t in range(t_min, t_max)
+    #         ]
+    #         corr[i] = np.sum(np.array(corr_list))
+
+    #     corr /= self.bins.ndata * self.rms_obs * self.rms_temp
+    #     return corr
 
     @property
     def ccf_peaks(self) -> Tuple[np.ndarray, np.ndarray]:
-        ccf = self.normalized_ccf()
+        ccf = self.ccf()
         peak_indices, _ = find_peaks(ccf, height=0.01)
         return self.lags[peak_indices], ccf[peak_indices]
 
     @property
     def primary_peak_loc(self) -> int:
-        peak_id = np.argmax(self.normalized_ccf())
+        peak_id = np.argmax(self.ccf())
         return self.lags[peak_id]
 
     @property
     def rv(self) -> float:
-        peak_id = np.argmax(self.normalized_ccf())
+        peak_id = np.argmax(self.ccf())
         return self.lags_in_kms[peak_id]
 
     @property
     def primary_peak_height(self) -> float:
-        ccf = self.normalized_ccf()
+        ccf = self.ccf()
         return ccf[self.primary_peak_loc + self.bins.nbins - 1]
 
     def rms_antisymmetric(self, lag_0: int) -> float:
@@ -129,8 +155,8 @@ class NormalizedCCF:
                 f"and {self.bins.nbins - 1}."
             )
 
-        antisymmetric = np.zeros_like(self.normalized_ccf())
-        ccf = self.normalized_ccf()
+        antisymmetric = np.zeros_like(self.ccf())
+        ccf = self.ccf()
         # Only element within i_min and i_max are computed, the others are kept
         # at 0.
         for i in range(i_min, i_max + 1):
