@@ -82,14 +82,37 @@ class NormalizedCCF:
 
     @property
     def lags_in_kms(self) -> np.ndarray:
+        """
+        Lags in units of km/s. It is computed by
+            lags [km/s] = lags [log] * log_step_size * c [km/s]
+        Returns
+        -------
+        np.ndarray
+            Lags in units of km/s.
+        """
         return self.lags * self.bins.log_step * const.c_in_kms
 
     @property
     def rms_obs(self) -> float:
+        """
+        Root mean square (RMS) of the observed spectrum.
+
+        Returns
+        -------
+        float
+            RMS value of the observed spectrum
+        """
         return np.sqrt(np.sum(self.data_obs ** 2) / self.bins.ndata)
 
     @property
     def rms_temp(self) -> float:
+        """
+        Root mean square (RMS) of the template spectrum.
+        Returns
+        -------
+        float
+            RMS value of the template spectrum.
+        """
         return np.sqrt(np.sum(self.data_temp ** 2) / self.bins.ndata)
 
     def ccf(self) -> np.ndarray:
@@ -107,6 +130,21 @@ class NormalizedCCF:
         return corr
 
     def ccf_peaks(self, min_height: float = 0.001) -> Tuple:
+        """
+        Returns the peak locations and heights, both positive and negative
+        of the cross-correlation function.
+
+        Parameters
+        ----------
+        min_height : float, optional
+            The minimum of absolute peak height used for peak detection, by
+            default 0.001
+
+        Returns
+        -------
+        Tuple
+            Peak location (integer indices), and peak heights (float).
+        """
         ccf = self.ccf()
         pos_peak, _ = find_peaks(ccf, height=None)
         neg_peak, _ = find_peaks(-ccf, height=None)
@@ -123,11 +161,25 @@ class NormalizedCCF:
 
     @property
     def primary_peak_loc(self) -> int:
+        """
+        Index location of the highest peak.
+        Returns
+        -------
+        int
+            Integer index of the highest peak.
+        """
         peak_id = np.argmax(self.ccf())
         return self.lags[peak_id]
 
     @property
     def rv(self) -> float:
+        """
+        Radial velocity of the observed spectrum relative to the template.
+        Returns
+        -------
+        float
+            Radial velocity (in km/s) of the observed spectrum.
+        """
         peak_indices, heights = self.ccf_peaks()
         max_peak_id = peak_indices[np.argmax(heights)]
 
@@ -182,6 +234,15 @@ class NormalizedCCF:
 
     @property
     def rv_err(self) -> float:
+        """
+        Uncertainty on the radial velocity estimate. It is estimated using the
+        Tonry & David 1979 method.
+
+        Returns
+        -------
+        float
+            Uncertainty on the radial velocity (in km/s).
+        """
         dist_from_primary_peak = np.abs(
             self.primary_peak_loc
             - self.lags[self.ccf_peaks()[0]]
