@@ -237,6 +237,13 @@ class NormalizedCCF:
         return r
 
     @property
+    def averaged_inter_peak_distance(self) -> float:
+        peak_locs = np.sort(self.ccf_peaks()[0])
+        peak_sep = np.diff(peak_locs)
+
+        return np.mean(peak_sep)
+
+    @property
     def rv_err(self) -> float:
         """
         Uncertainty on the radial velocity estimate. It is estimated using the
@@ -247,19 +254,8 @@ class NormalizedCCF:
         float
             Uncertainty on the radial velocity (in km/s).
         """
-        dist_from_primary_peak = np.abs(
-            self.primary_peak_loc
-            - self.lags[self.ccf_peaks()[0]]
-        )
-
-        dist_from_primary_peak = np.sort(dist_from_primary_peak)
-        # The second element in the distance array should be the distance to
-        # the closest neighbouring peak. N.B, the first one should be 0.
-
-        closest_peak_dist = dist_from_primary_peak[1]
-
         result = (
-            closest_peak_dist * (1 / (1 + self.r_ratio))
+            self.averaged_inter_peak_distance * (1 / (1 + self.r_ratio))
             * self.bins.log_step * const.c_in_kms
         )
 
