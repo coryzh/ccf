@@ -146,8 +146,8 @@ class NormalizedCCF:
             Peak location (integer indices), and peak heights (float).
         """
         ccf = self.ccf()
-        pos_peak, _ = find_peaks(ccf, height=None)
-        neg_peak, _ = find_peaks(-ccf, height=None)
+        pos_peak, _ = find_peaks(ccf, height=None, prominence=0)
+        neg_peak, _ = find_peaks(-ccf, height=None, prominence=0)
         pos_peak_heights = ccf[pos_peak]
         neg_peak_heights = np.abs(ccf[neg_peak])
 
