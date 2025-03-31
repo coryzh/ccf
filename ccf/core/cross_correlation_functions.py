@@ -255,7 +255,7 @@ class NormalizedCCF:
             Uncertainty on the radial velocity (in km/s).
         """
         result = (
-            self.averaged_inter_peak_distance * (1 / (1 + self.r_ratio))
+            0.25 * self.averaged_inter_peak_distance * (1 / (1 + self.r_ratio))
             * self.bins.log_step * const.c_in_kms
         )
 
