@@ -14,7 +14,7 @@
   - Calculate radial velocities and their uncertainties.
 
 - **Error Estimation**:
-  - Compute the r-ratio using the Tonry & Davis (1979) method.
+  - Compute the r-ratio using the [Tonry & Davis (1979)](https://ui.adsabs.harvard.edu/abs/1979AJ.....84.1511T/abstract) method.
   - Estimate RV uncertainties based on the closest neighbouring peak.
 
 ## Installation
@@ -25,5 +25,5 @@ To install the library, clone the repository and install the dependencies:
 pip install git+https://github.com/coryzh/ccf.git
 ```
 
-## Acknowledgments
-This library is inspired by the methods described in Tonry & Davis (1979) for cross-correlation and RV error estimation.
+## References
+Tonry, J. & Davis, M. 1979, AJ, 84, 1511
