@@ -22,7 +22,7 @@
 To install the library, clone the repository and install the dependencies:
 
 ```bash
-pip install git+https://github.com/your-username/your-repository-name.git
+pip install git+https://github.com/coryzh/ccf.git
 ```
 
 ## Acknowledgments
