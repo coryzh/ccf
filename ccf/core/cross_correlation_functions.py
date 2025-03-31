@@ -190,7 +190,7 @@ class NormalizedCCF:
         ccf = self.ccf()
         return ccf[self.primary_peak_loc + self.bins.ndata - 1]
 
-    def rms_antisymmetric(self, lag_0: int) -> float:
+    def antisymmetric(self, lag_0: int) -> np.ndarray:
         i_min = abs(lag_0)
         i_max = 2 * self.bins.ndata - 2 - abs(lag_0)
 
@@ -211,7 +211,11 @@ class NormalizedCCF:
                 - ccf[-i + self.bins.ndata - 1 + lag_0]
             )
 
-        sigma_a = np.sqrt(np.sum(antisymmetric ** 2) / (2 * self.bins.ndata))
+        return antisymmetric
+
+    def rms_antisymmetric(self, lag_0: int) -> float:
+        a = self.antisymmetric(lag_0=lag_0)
+        sigma_a = np.sqrt(np.sum(a ** 2) / (2 * self.bins.ndata))
         return sigma_a
 
     @property
