@@ -148,7 +148,7 @@ class NormalizedCCF:
         ccf = self.ccf()
         pos_peak, _ = find_peaks(ccf, height=None, prominence=0)
         neg_peak, _ = find_peaks(-ccf, height=None, prominence=0)
-        pos_peak_heights = ccf[pos_peak]
+        pos_peak_heights = np.abs(ccf[pos_peak])
         neg_peak_heights = np.abs(ccf[neg_peak])
 
         pos_peak_valid = pos_peak[np.where(pos_peak_heights >= min_height)[0]]
