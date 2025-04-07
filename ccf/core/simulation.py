@@ -10,7 +10,6 @@ class SimulationResults:
     simulation_type: str
     simulated_results: np.ndarray
 
-    @property
     def point_estimate(self, est_type: str = "median") -> float:
         valid_options = ["median", "mean"]
 
@@ -26,7 +25,6 @@ class SimulationResults:
                 f"please choose from {valid_options}"
             )
 
-    @property
     def bounds(self, conf_level: float = 0.68) -> Tuple[float, float]:
         lo_percentile = (1 - conf_level) * 100 / 2
         hi_percentile = 100 - lo_percentile
@@ -37,7 +35,6 @@ class SimulationResults:
             )
         )
 
-    @property
     def err(
         self, est_type: str = "median", conf_level: float = 0.68
     ) -> Tuple[float, float]:
