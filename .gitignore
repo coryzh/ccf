@@ -7,3 +7,7 @@
 .env
 *.iml
 .DS_Store
+
+# Ignore data files
+examples/*.fits
+examples/*.csv
