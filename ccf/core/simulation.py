@@ -47,9 +47,8 @@ class SimulationResults:
 
 
 class MonteCarloSimulation:
-    def __init__(self, n_sim: int, ccf: NormalizedCCF,
+    def __init__(self, ccf: NormalizedCCF,
                  n_sigma_clip: float = 3, n_simulations: int = 1000):
-        self.n_sim = n_sim
         self.ccf = ccf
         self.n_sigma_clip = n_sigma_clip
         self.n_simulations = n_simulations
