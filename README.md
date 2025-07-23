@@ -34,7 +34,7 @@ As an example,
 ```python
 import numpy as np
 from ccf.core.cross_correlation_functions import NormalizedCCF, WavelengthBin
-from ccf.resampler import interp_resampler
+from ccf.core.resampler import interp_resampler
 # Step 1: Instantiate a WavelengthBin object; this will be the wavelength range
 # of interest.
 wave_min = 4000  # Minimum wavelength in Angstroms
